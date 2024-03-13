@@ -1,9 +1,9 @@
 const PROTO_PATH = './customers.proto'
 
-const grpc = require("@grpc/grpc-js")
-const protoLoader = require("@grpc/proto-loader")
+import { loadPackageDefinition, Server, status, ServerCredentials } from "@grpc/grpc-js"
+import { loadSync } from "@grpc/proto-loader"
 
-const packageDefinition = protoLoader.loadSync(PROTO_PATH,{
+const packageDefinition = loadSync(PROTO_PATH,{
     keepCase: true,
     longs : String,
     enums: String,
@@ -11,9 +11,9 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH,{
 
 })
 
-const customersProto = grpc.loadPackageDefinition(packageDefinition)
+const customersProto = loadPackageDefinition(packageDefinition)
 
-const server = new grpc.Server()
+const server = new Server()
 
 
 const customers = [{
@@ -36,9 +36,24 @@ server.addService(customersProto.CustomerService.service,{
 
     },
     get: (call,callback) =>{
+        let customer = customers.find(n=>n.id == call.request.id)
+
+        if(customer){
+            callback(null,customer);
+        }else{
+            callback({
+                code : status.NOT_FOUND,
+                details: "Not found"
+            })
+        }
 
     },
     insert: (call,callback) =>{
+        let customer = call.request;
+
+        customer.id = Math.random(); //uuidv4
+        customers.push(customer);
+        callback(null,customer)
 
     },
     update: (call,callback) =>{
@@ -49,5 +64,11 @@ server.addService(customersProto.CustomerService.service,{
     },
 })
 
-server.bind("0.0.0.0:1234", grpc.ServerCredentials.createInsecure())
-server.start();
+server.bindAsync("0.0.0.0:1234", ServerCredentials.createInsecure(),(err,port)=>{
+    if(err){
+console.log("error happenened",err)
+    }else{
+    server.start();
+    console.log("grpc working correctly")
+    }
+})

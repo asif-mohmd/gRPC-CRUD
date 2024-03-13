@@ -1,9 +1,9 @@
-const PROTO_PATH = './customers.proto'
+const PROTO_PATH = '../server/customers.proto'
 
-const grpc = require("@grpc/grpc-js")
-const protoLoader = require("@grpc/proto-loader")
+import { loadPackageDefinition, credentials } from "@grpc/grpc-js"
+import { loadSync } from "@grpc/proto-loader"
 
-const packageDefinition = protoLoader.loadSync(PROTO_PATH,{
+const packageDefinition = loadSync(PROTO_PATH,{
     keepCase: true,
     longs : String,
     enums: String,
@@ -11,12 +11,12 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH,{
 
 })
 
-const customersService = grpc.loadPackageDefinition(packageDefinition).CustomerService
+const CustomerService = loadPackageDefinition(packageDefinition).CustomerService
 
 const client = new CustomerService(
     "0.0.0.0:1234",
-    grpc.ServerCredentials.createInsecure()
+    credentials.createInsecure()
 )
 
 
-module.exports = client
+export default client
