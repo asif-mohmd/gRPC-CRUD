@@ -16,9 +16,23 @@ const customersProto = grpc.loadPackageDefinition(packageDefinition)
 const server = new grpc.Server()
 
 
+const customers = [{
+    id: "111",
+    name: "asif",
+    age: 22,
+    address: "hsr",
+}, {
+    id:"222",
+    name: "jacky",
+    age: 23,
+    address: "kerala"
+}
+]
+
 
 server.addService(customersProto.CustomerService.service,{
     getAll: (call,callback) =>{
+        callback(null,{customers})
 
     },
     get: (call,callback) =>{
